@@ -8,3 +8,8 @@ const (
 	DEFAULT_COM_WIDTH = 50
 	DEFAULT_COM_HEIGHT = 30
 )
+
+
+var(
+	ComponentPool = make(map[string]interface{})
+)
