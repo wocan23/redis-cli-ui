@@ -22,6 +22,7 @@ func ExecCmd(cmdStr string) (interface{},error){
 		}
 	}
 	cmds := strings.Split(cmdStr," ")
+	// todo 过滤空
 	cmd := cmds[0]
 	args := cmds[1:]
 	argIns := make([]interface{},0)

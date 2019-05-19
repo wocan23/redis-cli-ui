@@ -96,20 +96,26 @@ func Layout() *gtk.Box{
 			fmt.Println("err",err)
 			return
 		}
-		resStr,err := redis.String(res,err)
+
+		values := make([]string,0)
+		values,err1 := redis.Strings(res,err)
+		if err1 != nil{
+			resStr,_ := redis.String(res,err)
+			values = append(values,resStr )
+		}
+
 
 		cmdEntry.SetText("")
 		showViewIn := common.ComponentPool["showViewBuf"]
 		buf := showViewIn.(*gtk.TextBuffer)
-		buf.InsertAtCursor("\n")
-		buf.InsertAtCursor(">>")
-		buf.InsertAtCursor(txt)
-		buf.InsertAtCursor("\n")
 
-		buf.InsertAtCursor("\n")
-		buf.InsertAtCursor("  ")
-		buf.InsertAtCursor(resStr)
-		buf.InsertAtCursor("\n")
+		insertKey(txt,buf)
+
+		for _,el := range values{
+			insertValue(el,buf)
+		}
+		insertValue("",buf)
+
 	}
 
 	cmdEntry.Connect("key_press_event", func(widget gtk.IWidget, event *gdk.Event) {
@@ -122,6 +128,20 @@ func Layout() *gtk.Box{
 
 
 	return box
+}
+
+func insertKey(key string,buf *gtk.TextBuffer){
+	//buf.InsertAtCursor("\n")
+	buf.InsertAtCursor(">>")
+	buf.InsertAtCursor(key)
+	buf.InsertAtCursor("\n")
+}
+
+func insertValue(value string,buf *gtk.TextBuffer){
+	//buf.InsertAtCursor("\n")
+	buf.InsertAtCursor("  ")
+	buf.InsertAtCursor(value)
+	buf.InsertAtCursor("\n")
 }
 
 
