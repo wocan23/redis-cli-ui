@@ -6,6 +6,7 @@ import (
 	"../common"
 	"github.com/gotk3/gotk3/gtk"
 	"fmt"
+	"regexp"
 )
 
 var ip string
@@ -15,14 +16,16 @@ var pwd string
 var c redis.Conn
 
 func ExecCmd(cmdStr string) (interface{},error){
+	cmdStr = strings.TrimSpace(cmdStr)
 	if c == nil{
 		err := checkRedis()
 		if err != nil{
 			return nil,err
 		}
 	}
-	cmds := strings.Split(cmdStr," ")
-	// todo 过滤空
+	reg,_ := regexp.Compile("\\s+")
+	cmds := reg.Split(cmdStr,-1)
+
 	cmd := cmds[0]
 	args := cmds[1:]
 	argIns := make([]interface{},0)

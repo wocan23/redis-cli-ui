@@ -3,10 +3,10 @@ package module
 import (
 	"github.com/gotk3/gotk3/gtk"
 	"github.com/gotk3/gotk3/gdk"
-	"fmt"
 	"../common"
 	"../rediscli"
 	"github.com/garyburd/redigo/redis"
+	"fmt"
 )
 
 func Layout() *gtk.Box{
@@ -84,6 +84,7 @@ func Layout() *gtk.Box{
 	scroll.SetMarginEnd(10)
 	scroll.SetMarginStart(10)
 	scroll.SetMarginTop(10)
+	scroll.SetFocusHAdjustment(adjust)
 
 	box.Add(scroll)
 
@@ -91,9 +92,11 @@ func Layout() *gtk.Box{
 	// 绑定事见
 	enterEvent := func(){
 		txt,_ := cmdEntry.GetText()
+		insertKey(txt,buf)
 		res,err := rediscli.ExecCmd(txt)
 		if err != nil{
-			fmt.Println("err",err)
+			insertValue(err.Error(),buf)
+			insertValue("",buf)
 			return
 		}
 
@@ -109,7 +112,6 @@ func Layout() *gtk.Box{
 		showViewIn := common.ComponentPool["showViewBuf"]
 		buf := showViewIn.(*gtk.TextBuffer)
 
-		insertKey(txt,buf)
 
 		for _,el := range values{
 			insertValue(el,buf)
@@ -123,6 +125,14 @@ func Layout() *gtk.Box{
 		v := eventkey.KeyVal()
 		if(v == 65293){
 			enterEvent()
+		}
+		// 上键
+		if(v == 65362){
+
+		}
+		// 下键
+		if(v == 65364){
+
 		}
 	},nil)
 
@@ -139,7 +149,7 @@ func insertKey(key string,buf *gtk.TextBuffer){
 
 func insertValue(value string,buf *gtk.TextBuffer){
 	//buf.InsertAtCursor("\n")
-	buf.InsertAtCursor("  ")
+	buf.InsertAtCursor("    ")
 	buf.InsertAtCursor(value)
 	buf.InsertAtCursor("\n")
 }
