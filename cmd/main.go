@@ -6,12 +6,13 @@ import (
 	"os"
 	"github.com/gotk3/gotk3/glib"
 	"github.com/gotk3/gotk3/gdk"
-	"./module"
-	"./common"
+	"../module"
+	"../common"
 )
 
 func main(){
 	mainFunc()
+
 }
 
 func mainFunc()  {

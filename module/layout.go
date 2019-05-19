@@ -1,7 +1,13 @@
 package module
 
-import "github.com/gotk3/gotk3/gtk"
-import "../common"
+import (
+	"github.com/gotk3/gotk3/gtk"
+	"github.com/gotk3/gotk3/gdk"
+	"fmt"
+	"../common"
+	"../rediscli"
+	"github.com/garyburd/redigo/redis"
+)
 
 func Layout() *gtk.Box{
 
@@ -17,7 +23,7 @@ func Layout() *gtk.Box{
 	ipEntry.SetWidthChars(20)
 	ipEntry.SetPlaceholderText("127.0.0.1")
 	ipEntry.SetText("127.0.0.1")
-	common.ComponentPool["ipEntity"] = ipEntry
+	common.ComponentPool["ipEntry"] = ipEntry
 
 	ipbox.Add(ipLabel)
 	ipbox.Add(ipEntry)
@@ -31,23 +37,89 @@ func Layout() *gtk.Box{
 	portEntry,_ := gtk.EntryNew()
 	portEntry.SetWidthChars(20)
 	portEntry.SetText("6379")
-	common.ComponentPool["portEntity"] = portEntry
+	common.ComponentPool["portEntry"] = portEntry
 
 	portbox.Add(portLabel)
 	portbox.Add(portEntry)
 	portbox.SetMarginTop(10)
 
+	// cmd
+	cmdbox,_ := gtk.BoxNew(gtk.ORIENTATION_HORIZONTAL,0)
+
+	cmdLabel,_ := gtk.LabelNew("cmd:")
+	cmdLabel.SetSizeRequest(common.DEFAULT_COM_WIDTH,common.DEFAULT_COM_HEIGHT)
+
+	cmdEntry,_ := gtk.EntryNew()
+	cmdEntry.SetWidthChars(50)
+
+
+	cmdbox.Add(cmdLabel)
+	cmdbox.Add(cmdEntry)
+	cmdbox.SetMarginTop(10)
+
 	// show
-	showbox,_ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL,0)
-	showView,_ := gtk.TextViewNew()
+	showbox,_ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL,10)
+	tag,_ := gtk.TextTagTableNew()
+	buf,_ := gtk.TextBufferNew(tag)
+	showView,_ := gtk.TextViewNewWithBuffer(buf)
 	showView.SetSizeRequest(400,300)
-	showView.SetMarginTop(10)
+	showView.SetIndent(5)
+	showView.SetEditable(false)
+	common.ComponentPool["showView"] = showView
+	common.ComponentPool["showViewBuf"] = buf
 
 	showbox.Add(showView)
 
 	box.Add(ipbox)
 	box.Add(portbox)
-	box.Add(showbox)
+	box.Add(cmdbox)
+
+	adjust,_ := gtk.AdjustmentNew(0,0,0,10,10,10)
+	scroll,_ := gtk.ScrolledWindowNew(adjust,nil)
+	scroll.SetSizeRequest(400,300)
+	scroll.SetBorderWidth(0)
+	scroll.Add(showbox)
+	scroll.SetVExpand(true)
+	scroll.SetMarginBottom(10)
+	scroll.SetMarginEnd(10)
+	scroll.SetMarginStart(10)
+	scroll.SetMarginTop(10)
+
+	box.Add(scroll)
+
+
+	// 绑定事见
+	enterEvent := func(){
+		txt,_ := cmdEntry.GetText()
+		res,err := rediscli.ExecCmd(txt)
+		if err != nil{
+			fmt.Println("err",err)
+			return
+		}
+		resStr,err := redis.String(res,err)
+
+		cmdEntry.SetText("")
+		showViewIn := common.ComponentPool["showViewBuf"]
+		buf := showViewIn.(*gtk.TextBuffer)
+		buf.InsertAtCursor("\n")
+		buf.InsertAtCursor(">>")
+		buf.InsertAtCursor(txt)
+		buf.InsertAtCursor("\n")
+
+		buf.InsertAtCursor("\n")
+		buf.InsertAtCursor("  ")
+		buf.InsertAtCursor(resStr)
+		buf.InsertAtCursor("\n")
+	}
+
+	cmdEntry.Connect("key_press_event", func(widget gtk.IWidget, event *gdk.Event) {
+		eventkey := gdk.EventKey{event}
+		v := eventkey.KeyVal()
+		if(v == 65293){
+			enterEvent()
+		}
+	},nil)
+
 
 	return box
 }

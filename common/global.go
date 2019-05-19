@@ -12,4 +12,5 @@ const (
 
 var(
 	ComponentPool = make(map[string]interface{})
+	EventPool = make(map[string]func())
 )

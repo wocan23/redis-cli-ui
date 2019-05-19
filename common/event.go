@@ -1,12 +1,12 @@
 package common
 
-import "github.com/gotk3/gotk3/gtk"
 
 
-func Subscribe(id string,f func(widget gtk.IWidget)){
-
+func Subscribe(id string,f func()){
+	EventPool[id+"_f"] = f
 }
 
 func send(id string){
-
+	f := EventPool[id]
+	f()
 }
