@@ -6,7 +6,6 @@ import (
 	"../common"
 	"../rediscli"
 	"github.com/garyburd/redigo/redis"
-	"fmt"
 	"strings"
 )
 
@@ -125,7 +124,7 @@ func Layout() *gtk.Box{
 	cmdEntry.Connect("key_press_event", func(widget gtk.IWidget, event *gdk.Event) {
 		eventkey := gdk.EventKey{event}
 		v := eventkey.KeyVal()
-		if(v == 65293){
+		if(v == common.KEY_ENTER){
 			cmdStr,_ := cmdEntry.GetText()
 			cmdStr = strings.TrimSpace(cmdStr)
 			if(cmdStr == ""){
@@ -142,15 +141,13 @@ func Layout() *gtk.Box{
 			scrollToBottom()
 		}
 		// 上键
-		if(v == 65362){
-			fmt.Println("up")
+		if(v == common.KEY_UP){
 			common.AppWindow.SetFocusChild(cmdEntry)
 			cmdEntry.SetText(getLastCmdStr())
 
 		}
 		// 下键
-		if(v == 65364){
-			fmt.Println("down")
+		if(v == common.KEY_DOWN){
 			common.AppWindow.SetFocusChild(cmdEntry)
 			cmdEntry.SetText(getNextCmdStr())
 		}
