@@ -13,16 +13,16 @@ var ip string
 var port string
 var pwd string
 
-var c redis.Conn
 
 func ExecCmd(cmdStr string) (interface{},error){
 	cmdStr = strings.TrimSpace(cmdStr)
-	if c == nil{
-		err := checkRedis()
+	//if c == nil{
+		conn,err := checkRedis()
+		defer conn.Close()
 		if err != nil{
 			return nil,err
 		}
-	}
+	//}
 	reg,_ := regexp.Compile("\\s+")
 	cmds := reg.Split(cmdStr,-1)
 
@@ -32,10 +32,10 @@ func ExecCmd(cmdStr string) (interface{},error){
 	for _,argIn := range args{
 		argIns = append(argIns, argIn)
 	}
-	return c.Do(cmd,argIns...)
+	return conn.Do(cmd,argIns...)
 }
 
-func checkRedis() error{
+func checkRedis() (redis.Conn,error){
 	ipEntry := common.ComponentPool["ipEntry"]
 	portEntry := common.ComponentPool["portEntry"]
 	ip,_ := ipEntry.(*gtk.Entry).GetText()
@@ -44,19 +44,17 @@ func checkRedis() error{
 	fmt.Println(ip+":"+port)
 	conn, err := redis.Dial("tcp", ip+":"+port)
 	if err != nil{
-		return err
+		return nil,err
 	}
-	c = conn
-	return nil
+	return conn,nil
 }
 
-func defaultRedis() error{
+func defaultRedis() (redis.Conn,error){
 	conn, err := redis.Dial("tcp", "localhost:6379")
 	if err != nil{
-		return err
+		return nil,err
 	}
-	c = conn
-	return nil
+	return conn,nil
 }
 
 
