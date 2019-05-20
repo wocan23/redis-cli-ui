@@ -65,6 +65,7 @@ func Layout() *gtk.Box{
 	showView.SetSizeRequest(400,300)
 	showView.SetIndent(5)
 	showView.SetEditable(false)
+	showView.SetPixelsBelowLines(2)
 	common.ComponentPool["showView"] = showView
 	common.ComponentPool["showViewBuf"] = buf
 
