@@ -60,6 +60,7 @@ func Layout() *gtk.Box{
 	// show
 	//showbox,_ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL,10)
 	tag,_ := gtk.TextTagTableNew()
+	tag.Add(createTextTag())
 	buf,_ := gtk.TextBufferNew(tag)
 	showView,_ := gtk.TextViewNewWithBuffer(buf)
 	showView.SetSizeRequest(400,300)
@@ -159,7 +160,7 @@ func Layout() *gtk.Box{
 }
 
 func insertKey(key string,buf *gtk.TextBuffer){
-	//buf.InsertAtCursor("\n")
+	buf.InsertAtCursor("\n")
 	buf.InsertAtCursor(">>")
 	buf.InsertAtCursor(key)
 	buf.InsertAtCursor("\n")
@@ -170,6 +171,7 @@ func insertValue(value string,buf *gtk.TextBuffer){
 	buf.InsertAtCursor("    ")
 	buf.InsertAtCursor(value)
 	buf.InsertAtCursor("\n")
+	buf.ApplyTagByName("fontTag",buf.GetStartIter(),buf.GetEndIter())
 }
 
 
@@ -212,5 +214,13 @@ func scrollToBottom(){
 	mark := showViewBuf.CreateMark("bottomMark",iter,true)
 	showView.ScrollToMark(mark,0,true,1,0)
 
+}
+
+func createTextTag()*gtk.TextTag{
+	tagFont,_ := gtk.TextTagNew("fontTag")
+	tagFont.SetProperty("font","微软雅黑")
+	//tagFont.SetProperty("size",20)
+
+	return tagFont
 }
 
