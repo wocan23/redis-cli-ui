@@ -59,7 +59,7 @@ func Layout() *gtk.Box{
 	cmdbox.SetMarginTop(10)
 
 	// show
-	showbox,_ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL,10)
+	//showbox,_ := gtk.BoxNew(gtk.ORIENTATION_VERTICAL,10)
 	tag,_ := gtk.TextTagTableNew()
 	buf,_ := gtk.TextBufferNew(tag)
 	showView,_ := gtk.TextViewNewWithBuffer(buf)
@@ -69,7 +69,7 @@ func Layout() *gtk.Box{
 	common.ComponentPool["showView"] = showView
 	common.ComponentPool["showViewBuf"] = buf
 
-	showbox.Add(showView)
+	//showbox.Add(showView)
 
 	box.Add(ipbox)
 	box.Add(portbox)
@@ -79,13 +79,15 @@ func Layout() *gtk.Box{
 	scroll,_ := gtk.ScrolledWindowNew(adjust,nil)
 	scroll.SetSizeRequest(400,300)
 	scroll.SetBorderWidth(0)
-	scroll.Add(showbox)
+	scroll.Add(showView)
 	scroll.SetVExpand(true)
 	scroll.SetMarginBottom(10)
 	scroll.SetMarginEnd(10)
 	scroll.SetMarginStart(10)
 	scroll.SetMarginTop(10)
 	scroll.SetFocusHAdjustment(adjust)
+	screen,_ := scroll.GetScreen()
+	screen.ForceFloating()
 
 	box.Add(scroll)
 
@@ -129,11 +131,15 @@ func Layout() *gtk.Box{
 			if(cmdStr == ""){
 				return
 			}
+			// 执行enter
 			enterEvent(cmdStr)
+			// 记录上一次指令
 			if len(common.LastCmdStrs)==0 || common.LastCmdStrs[len(common.LastCmdStrs)-1]!=cmdStr{
 				common.LastCmdStrs = append(common.LastCmdStrs, cmdStr)
 			}
 			common.LastCmdIndex = len(common.LastCmdStrs)-1
+			// 跳到最后
+			scrollToBottom()
 		}
 		// 上键
 		if(v == 65362){
@@ -193,5 +199,20 @@ func getNextCmdStr() string{
 	}
 	cmdStr := common.LastCmdStrs[common.LastCmdIndex]
 	return cmdStr
+}
+
+func scrollToBottom(){
+	common.ScrollLock.Lock()
+	defer common.ScrollLock.Unlock()
+
+	showViewIn := common.ComponentPool["showView"]
+	showViewBufIn := common.ComponentPool["showViewBuf"]
+
+	showView := showViewIn.(*gtk.TextView)
+	showViewBuf := showViewBufIn.(*gtk.TextBuffer)
+	iter := showViewBuf.GetEndIter()
+	mark := showViewBuf.CreateMark("bottomMark",iter,true)
+	showView.ScrollToMark(mark,0,true,1,0)
+
 }
 

@@ -24,4 +24,5 @@ var(
 	LastCmdIndex = 0
 
 	LastCmdStrLock = new(sync.RWMutex)
+	ScrollLock = new(sync.RWMutex)
 )
