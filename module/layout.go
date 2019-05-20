@@ -7,6 +7,7 @@ import (
 	"../rediscli"
 	"github.com/garyburd/redigo/redis"
 	"fmt"
+	"strings"
 )
 
 func Layout() *gtk.Box{
@@ -90,10 +91,9 @@ func Layout() *gtk.Box{
 
 
 	// 绑定事见
-	enterEvent := func(){
-		txt,_ := cmdEntry.GetText()
-		insertKey(txt,buf)
-		res,err := rediscli.ExecCmd(txt)
+	enterEvent := func(cmdStr string){
+		insertKey(cmdStr,buf)
+		res,err := rediscli.ExecCmd(cmdStr)
 		if err != nil{
 			insertValue(err.Error(),buf)
 			insertValue("",buf)
@@ -119,20 +119,34 @@ func Layout() *gtk.Box{
 		insertValue("",buf)
 
 	}
-
+	common.AppWindow.SetFocusChild(cmdEntry)
 	cmdEntry.Connect("key_press_event", func(widget gtk.IWidget, event *gdk.Event) {
 		eventkey := gdk.EventKey{event}
 		v := eventkey.KeyVal()
 		if(v == 65293){
-			enterEvent()
+			cmdStr,_ := cmdEntry.GetText()
+			cmdStr = strings.TrimSpace(cmdStr)
+			if(cmdStr == ""){
+				return
+			}
+			enterEvent(cmdStr)
+			if len(common.LastCmdStrs)==0 || common.LastCmdStrs[len(common.LastCmdStrs)-1]!=cmdStr{
+				common.LastCmdStrs = append(common.LastCmdStrs, cmdStr)
+			}
+			common.LastCmdIndex = len(common.LastCmdStrs)-1
 		}
 		// 上键
 		if(v == 65362){
+			fmt.Println("up")
+			common.AppWindow.SetFocusChild(cmdEntry)
+			cmdEntry.SetText(getLastCmdStr())
 
 		}
 		// 下键
 		if(v == 65364){
-
+			fmt.Println("down")
+			common.AppWindow.SetFocusChild(cmdEntry)
+			cmdEntry.SetText(getNextCmdStr())
 		}
 	},nil)
 
@@ -154,4 +168,30 @@ func insertValue(value string,buf *gtk.TextBuffer){
 	buf.InsertAtCursor("\n")
 }
 
+
+func getLastCmdStr() string{
+	common.LastCmdStrLock.Lock()
+	defer common.LastCmdStrLock.Unlock()
+	if(len(common.LastCmdStrs) == 0){
+		return ""
+	}
+	cmdStr := common.LastCmdStrs[common.LastCmdIndex]
+	common.LastCmdIndex--
+	if(common.LastCmdIndex<=0){
+		common.LastCmdIndex = 0
+	}
+	return cmdStr
+}
+
+func getNextCmdStr() string{
+	common.LastCmdStrLock.Lock()
+	defer common.LastCmdStrLock.Unlock()
+	common.LastCmdIndex++
+	if(common.LastCmdIndex>len(common.LastCmdStrs)-1){
+		common.LastCmdIndex = len(common.LastCmdStrs)-1
+		return ""
+	}
+	cmdStr := common.LastCmdStrs[common.LastCmdIndex]
+	return cmdStr
+}
 

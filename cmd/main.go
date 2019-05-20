@@ -33,6 +33,7 @@ func onActivate(application *gtk.Application) {
 	if err != nil {
 		log.Fatal("Could not create application window.", err)
 	}
+	common.AppWindow = appWindow
 	// Set ApplicationWindow Properties
 	appWindow.SetTitle("Redis Cli")
 
