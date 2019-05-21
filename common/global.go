@@ -16,6 +16,10 @@ const (
 	KEY_ENTER = 65293
 	KEY_UP = 65362
 	KEY_DOWN = 65364
+
+ 	CACHE_PATH = "/var/redis-cli/"
+ 	CACHE_FILE = "cache"
+ 	CACHE_DB = "cache.db"
 )
 
 

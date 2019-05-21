@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"sync"
 	"io/ioutil"
+	"../common"
 )
 
-const CACHE_PATH = "/var/redis-cli/"
-const CACHE_FILE = "cache"
+
 
 
 var cacheMap = make(map[string]string,0)
@@ -19,20 +19,20 @@ func init(){
 }
 
 func checkFile(){
-	dirExist,_ := Exists(CACHE_PATH)
+	dirExist,_ := Exists(common.CACHE_PATH)
 	if !dirExist{
-		os.MkdirAll(CACHE_PATH,os.ModePerm)
+		os.MkdirAll(common.CACHE_PATH,os.ModePerm)
 	}
-	fileExist,_ := Exists(CACHE_PATH+CACHE_FILE)
+	fileExist,_ := Exists(common.CACHE_PATH+common.CACHE_FILE)
 	if !fileExist{
-		os.Create(CACHE_PATH+CACHE_FILE)
+		os.Create(common.CACHE_PATH+common.CACHE_FILE)
 	}
 
 }
 
 func readCacheFile() error{
 	checkFile()
-	bs,err := ioutil.ReadFile(CACHE_PATH+CACHE_FILE)
+	bs,err := ioutil.ReadFile(common.CACHE_PATH+common.CACHE_FILE)
 	if err != nil{
 		return err
 	}
@@ -44,7 +44,7 @@ func PutCache(key string, value string){
 	cacheLock.Lock()
 	defer cacheLock.Unlock()
 	checkFile()
-	f, _ := os.OpenFile(CACHE_PATH+CACHE_FILE, os.O_WRONLY|os.O_TRUNC, 0600)
+	f, _ := os.OpenFile(common.CACHE_PATH+common.CACHE_FILE, os.O_WRONLY|os.O_TRUNC, 0600)
 	defer f.Close()
 	cacheMap[key] = value
 	json.Marshal(cacheMap)
